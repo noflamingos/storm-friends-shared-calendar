@@ -20,6 +20,16 @@ function toIso(t) {
   if (!t) return null;
 
   try {
+    // Preserve all-day/date-only events without timezone conversion
+    if (t.isDate) {
+      const year = String(t.year);
+      const month = String(t.month).padStart(2, '0');
+      const day = String(t.day).padStart(2, '0');
+
+      return `${year}-${month}-${day}`;
+    }
+
+    // Timed events can safely use an ISO timestamp
     return t.toJSDate().toISOString();
   } catch {
     return null;
