@@ -19,15 +19,19 @@ for (const source of sources) {
   const comp = new ICAL.Component(ICAL.parse(text));
   for (const vevent of comp.getAllSubcomponents('vevent')) {
     const e = new ICAL.Event(vevent);
+    const title = e.summary || source.team;
+    const type = title.includes(' - Game ') ? 'game' : 'practice';
+
     events.push({
       id: `${source.team}-${e.uid || crypto.randomUUID()}`,
-      title: e.summary || source.team,
+      title,
       start: toIso(e.startDate),
       end: toIso(e.endDate),
       allDay: Boolean(e.startDate?.isDate),
       location: e.location || '',
       description: e.description || '',
       team: source.team,
+      type,
       backgroundColor: source.color,
       borderColor: source.color,
       textColor: source.textColor
