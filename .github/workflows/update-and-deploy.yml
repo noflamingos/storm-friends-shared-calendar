@@ -20,7 +20,6 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 24
-          cache: npm
       - run: npm install
       - run: npm run update
       - uses: actions/configure-pages@v5
