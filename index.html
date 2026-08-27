@@ -6,32 +6,476 @@
   <meta name="theme-color" content="#004e8a">
   <title>Storm Friends Shared Calendar</title>
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.19/index.global.min.js"></script>
+
   <style>
-    :root{--u10:#45dbe6;--u12:#004e8a;--ink:#10212b;--muted:#667782;--paper:#f4f7f9;--card:#fff}
-    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
-    header{background:#fff;border-bottom:1px solid #dbe4e9;padding:22px 18px 16px} .wrap{max-width:1100px;margin:auto}
-    h1{font-size:clamp(1.45rem,4vw,2.2rem);margin:0 0 12px}.legend{display:flex;gap:10px;flex-wrap:wrap}.filter{border:0;border-radius:999px;padding:9px 13px;font-weight:700;cursor:pointer;box-shadow:inset 0 0 0 2px transparent}.filter.off{opacity:.35}.u10{background:var(--u10);color:#062f33}.u12{background:var(--u12);color:white}
-    main{max-width:1100px;margin:18px auto;padding:0 12px 28px}.panel{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 5px 22px rgba(25,52,67,.08)}
-    #updated{font-size:.8rem;color:var(--muted);margin:0 0 10px 4px}.fc .fc-toolbar-title{font-size:1.25rem}.fc .fc-button{background:#173747;border-color:#173747}.fc-event{cursor:pointer}
-    dialog{border:0;border-radius:16px;max-width:520px;width:calc(100% - 28px);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(5,20,28,.5)}.modal{padding:20px}.modal h2{margin-top:0}.close{float:right;border:0;background:#e9eff2;border-radius:999px;width:34px;height:34px;font-size:20px}.meta{color:var(--muted);white-space:pre-wrap}.teamtag{display:inline-block;border-radius:999px;padding:5px 9px;font-weight:700;font-size:.8rem}
-    @media(max-width:700px){header{padding-top:16px}.panel{padding:8px;border-radius:12px}.fc .fc-toolbar{align-items:flex-start;gap:8px;flex-wrap:wrap}.fc .fc-toolbar-chunk{display:flex}.fc .fc-button{padding:.4em .55em}.fc .fc-toolbar-title{font-size:1.1rem}}
+    :root{
+      --u10:#45dbe6;
+      --u12:#004e8a;
+      --ink:#10212b;
+      --muted:#667782;
+      --paper:#f4f7f9;
+      --card:#fff;
+    }
+
+    *{box-sizing:border-box}
+
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      background:var(--paper);
+      color:var(--ink);
+    }
+
+    header{
+      background:#fff;
+      border-bottom:1px solid #dbe4e9;
+      padding:22px 18px 16px;
+    }
+
+    .wrap{max-width:1100px;margin:auto}
+
+    h1{
+      font-size:clamp(1.45rem,4vw,2.2rem);
+      margin:0 0 14px;
+    }
+
+    .filter-section{
+      margin-top:10px;
+    }
+
+    .filter-label{
+      font-size:.75rem;
+      font-weight:700;
+      color:var(--muted);
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:6px;
+    }
+
+    .legend{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .filter{
+      border:0;
+      border-radius:999px;
+      padding:9px 13px;
+      font-weight:700;
+      cursor:pointer;
+      box-shadow:inset 0 0 0 2px transparent;
+    }
+
+    .filter.off{opacity:.3}
+
+    .u10{
+      background:var(--u10);
+      color:#062f33;
+    }
+
+    .u12{
+      background:var(--u12);
+      color:white;
+    }
+
+    .type-filter{
+      background:#e5ebee;
+      color:#173747;
+    }
+
+    .type-filter.game{
+      background:#173747;
+      color:white;
+    }
+
+    main{
+      max-width:1100px;
+      margin:18px auto;
+      padding:0 12px 28px;
+    }
+
+    .panel{
+      background:var(--card);
+      border-radius:16px;
+      padding:14px;
+      box-shadow:0 5px 22px rgba(25,52,67,.08);
+    }
+
+    #updated{
+      font-size:.8rem;
+      color:var(--muted);
+      margin:0 0 10px 4px;
+    }
+
+    .fc .fc-toolbar-title{font-size:1.25rem}
+
+    .fc .fc-button{
+      background:#173747;
+      border-color:#173747;
+    }
+
+    .fc-event{cursor:pointer}
+
+    /* Games are solid and prominent */
+    .event-game{
+      font-weight:700;
+    }
+
+    /* Practices use a softer treatment */
+    .event-practice{
+      opacity:.72;
+    }
+
+    .event-practice .fc-event-main{
+      font-weight:500;
+    }
+
+    .event-type-badge{
+      display:inline-block;
+      font-size:.6rem;
+      font-weight:800;
+      letter-spacing:.03em;
+      margin-right:4px;
+    }
+
+    dialog{
+      border:0;
+      border-radius:16px;
+      max-width:520px;
+      width:calc(100% - 28px);
+      padding:0;
+      box-shadow:0 20px 60px rgba(0,0,0,.25);
+    }
+
+    dialog::backdrop{
+      background:rgba(5,20,28,.5);
+    }
+
+    .modal{padding:20px}
+    .modal h2{margin-top:0}
+
+    .close{
+      float:right;
+      border:0;
+      background:#e9eff2;
+      border-radius:999px;
+      width:34px;
+      height:34px;
+      font-size:20px;
+    }
+
+    .meta{
+      color:var(--muted);
+      white-space:pre-wrap;
+    }
+
+    .teamtag{
+      display:inline-block;
+      border-radius:999px;
+      padding:5px 9px;
+      font-weight:700;
+      font-size:.8rem;
+    }
+
+    .eventtag{
+      display:inline-block;
+      border-radius:999px;
+      padding:5px 9px;
+      font-weight:700;
+      font-size:.8rem;
+      background:#e5ebee;
+      margin-left:5px;
+    }
+
+    @media(max-width:700px){
+      header{padding-top:16px}
+      .panel{padding:8px;border-radius:12px}
+      .fc .fc-toolbar{
+        align-items:flex-start;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+      .fc .fc-toolbar-chunk{display:flex}
+      .fc .fc-button{padding:.4em .55em}
+      .fc .fc-toolbar-title{font-size:1.1rem}
+    }
   </style>
 </head>
+
 <body>
-<header><div class="wrap"><h1>Storm Friends Shared Calendar</h1><div class="legend"><button class="filter u10" data-team="Storm U10 AA">Storm U10 AA</button><button class="filter u12" data-team="Storm U12 A">Storm U12 A</button></div></div></header>
-<main><p id="updated">Loading schedule…</p><div class="panel"><div id="calendar"></div></div></main>
-<dialog id="details"><div class="modal"><button class="close" aria-label="Close">×</button><h2 id="dtitle"></h2><p><span id="dteam" class="teamtag"></span></p><p id="dtime"></p><p id="dlocation"></p><p id="ddesc" class="meta"></p></div></dialog>
+
+<header>
+  <div class="wrap">
+    <h1>Storm Friends Shared Calendar</h1>
+
+    <div class="filter-section">
+      <div class="filter-label">Teams</div>
+      <div class="legend">
+        <button class="filter u10 team-filter" data-team="Storm U10 AA">
+          Storm U10 AA
+        </button>
+
+        <button class="filter u12 team-filter" data-team="Storm U12 A">
+          Storm U12 A
+        </button>
+      </div>
+    </div>
+
+    <div class="filter-section">
+      <div class="filter-label">Events</div>
+      <div class="legend">
+        <button class="filter type-filter game event-filter" data-type="game">
+          Games
+        </button>
+
+        <button class="filter type-filter event-filter" data-type="practice">
+          Practices
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <p id="updated">Loading schedule…</p>
+
+  <div class="panel">
+    <div id="calendar"></div>
+  </div>
+</main>
+
+<dialog id="details">
+  <div class="modal">
+    <button class="close" aria-label="Close">×</button>
+
+    <h2 id="dtitle"></h2>
+
+    <p>
+      <span id="dteam" class="teamtag"></span>
+      <span id="dtype" class="eventtag"></span>
+    </p>
+
+    <p id="dtime"></p>
+    <p id="dlocation"></p>
+    <p id="ddesc" class="meta"></p>
+  </div>
+</dialog>
+
 <script>
 (async()=>{
- const data=await fetch('./data/events.json',{cache:'no-store'}).then(r=>r.json());
- const active=new Set(['Storm U10 AA','Storm U12 A']); const all=data.events;
- const updated=document.querySelector('#updated'); updated.textContent=data.updatedAt?'Schedule updated '+new Date(data.updatedAt).toLocaleString():'Schedule will populate after the first GitHub Action run.';
- const cal=new FullCalendar.Calendar(document.querySelector('#calendar'),{initialView:innerWidth<700?'listMonth':'dayGridMonth',height:'auto',firstDay:1,headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},buttonText:{today:'Today',month:'Month',list:'Schedule'},events:all,eventClick:({event})=>{
-   const p=event.extendedProps; document.querySelector('#dtitle').textContent=event.title; const tag=document.querySelector('#dteam'); tag.textContent=p.team; tag.style.background=p.backgroundColor||event.backgroundColor; tag.style.color=p.textColor||event.textColor;
-   const opts={weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}; document.querySelector('#dtime').textContent=event.start?event.start.toLocaleString([],opts):''; document.querySelector('#dlocation').textContent=p.location?'📍 '+p.location:''; document.querySelector('#ddesc').textContent=p.description||''; document.querySelector('#details').showModal();
- },eventDidMount:({event,el})=>{if(!active.has(event.extendedProps.team))el.style.display='none'}}); cal.render();
- document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{const t=b.dataset.team; active.has(t)?active.delete(t):active.add(t);b.classList.toggle('off',!active.has(t));cal.getEvents().forEach(e=>e.setProp('display',active.has(e.extendedProps.team)?'auto':'none'));});
- document.querySelector('.close').onclick=()=>document.querySelector('#details').close(); document.querySelector('#details').onclick=e=>{if(e.target.id==='details')e.target.close()};
-})().catch(e=>{document.querySelector('#updated').textContent='Could not load the schedule. '+e.message});
+
+  const data = await fetch('./data/events.json',{
+    cache:'no-store'
+  }).then(r=>r.json());
+
+  const activeTeams = new Set([
+    'Storm U10 AA',
+    'Storm U12 A'
+  ]);
+
+  const activeTypes = new Set([
+    'game',
+    'practice'
+  ]);
+
+  const updated = document.querySelector('#updated');
+
+  updated.textContent = data.updatedAt
+    ? 'Schedule updated ' + new Date(data.updatedAt).toLocaleString()
+    : 'Schedule will populate after the first GitHub Action run.';
+
+
+  const cal = new FullCalendar.Calendar(
+    document.querySelector('#calendar'),
+    {
+
+      initialView:
+        innerWidth < 700
+          ? 'listMonth'
+          : 'dayGridMonth',
+
+      height:'auto',
+
+      /* Sunday is day 0 */
+      firstDay:0,
+
+      headerToolbar:{
+        left:'prev,next today',
+        center:'title',
+        right:'dayGridMonth,listMonth'
+      },
+
+      buttonText:{
+        today:'Today',
+        month:'Month',
+        list:'Schedule'
+      },
+
+      events:data.events,
+
+
+      eventClick:({event})=>{
+
+        const p = event.extendedProps;
+
+        document.querySelector('#dtitle').textContent =
+          event.title;
+
+        const tag =
+          document.querySelector('#dteam');
+
+        tag.textContent = p.team;
+
+        tag.style.background =
+          event.backgroundColor;
+
+        tag.style.color =
+          event.textColor;
+
+        document.querySelector('#dtype').textContent =
+          p.type === 'game'
+            ? 'GAME'
+            : 'PRACTICE';
+
+        const opts = {
+          weekday:'short',
+          month:'short',
+          day:'numeric',
+          hour:'numeric',
+          minute:'2-digit'
+        };
+
+        document.querySelector('#dtime').textContent =
+          event.start
+            ? event.start.toLocaleString([],opts)
+            : '';
+
+        document.querySelector('#dlocation').textContent =
+          p.location
+            ? '📍 ' + p.location
+            : '';
+
+        document.querySelector('#ddesc').textContent =
+          p.description || '';
+
+        document.querySelector('#details').showModal();
+      },
+
+
+      eventDidMount:({event,el})=>{
+
+        const p = event.extendedProps;
+
+        if(p.type === 'game'){
+          el.classList.add('event-game');
+        } else {
+          el.classList.add('event-practice');
+        }
+
+        if(
+          !activeTeams.has(p.team) ||
+          !activeTypes.has(p.type)
+        ){
+          el.style.display='none';
+        }
+      }
+    }
+  );
+
+  cal.render();
+
+
+  function updateVisibility(){
+
+    cal.getEvents().forEach(event=>{
+
+      const p = event.extendedProps;
+
+      const visible =
+        activeTeams.has(p.team) &&
+        activeTypes.has(p.type);
+
+      event.setProp(
+        'display',
+        visible ? 'auto' : 'none'
+      );
+
+    });
+  }
+
+
+  document
+    .querySelectorAll('.team-filter')
+    .forEach(button=>{
+
+      button.onclick=()=>{
+
+        const team =
+          button.dataset.team;
+
+        if(activeTeams.has(team)){
+          activeTeams.delete(team);
+        } else {
+          activeTeams.add(team);
+        }
+
+        button.classList.toggle(
+          'off',
+          !activeTeams.has(team)
+        );
+
+        updateVisibility();
+      };
+
+    });
+
+
+  document
+    .querySelectorAll('.event-filter')
+    .forEach(button=>{
+
+      button.onclick=()=>{
+
+        const type =
+          button.dataset.type;
+
+        if(activeTypes.has(type)){
+          activeTypes.delete(type);
+        } else {
+          activeTypes.add(type);
+        }
+
+        button.classList.toggle(
+          'off',
+          !activeTypes.has(type)
+        );
+
+        updateVisibility();
+      };
+
+    });
+
+
+  document.querySelector('.close').onclick =
+    ()=>document.querySelector('#details').close();
+
+
+  document.querySelector('#details').onclick =
+    event=>{
+      if(event.target.id==='details'){
+        event.target.close();
+      }
+    };
+
+})().catch(error=>{
+
+  document.querySelector('#updated').textContent =
+    'Could not load the schedule. ' +
+    error.message;
+
+});
 </script>
-</body></html>
+
+</body>
+</html>
