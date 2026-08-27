@@ -1,0 +1,7 @@
+{
+  "name": "storm-friends-shared-calendar",
+  "private": true,
+  "type": "module",
+  "scripts": {"update": "node scripts/update-calendar.mjs"},
+  "dependencies": {"ical.js": "^2.2.1"}
+}

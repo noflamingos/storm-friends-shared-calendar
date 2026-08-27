@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#004e8a">
+  <title>Storm Friends Shared Calendar</title>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@7.0.2/index.global.min.js"></script>
+  <style>
+    :root{--u10:#45dbe6;--u12:#004e8a;--ink:#10212b;--muted:#667782;--paper:#f4f7f9;--card:#fff}
+    *{box-sizing:border-box} body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--paper);color:var(--ink)}
+    header{background:#fff;border-bottom:1px solid #dbe4e9;padding:22px 18px 16px} .wrap{max-width:1100px;margin:auto}
+    h1{font-size:clamp(1.45rem,4vw,2.2rem);margin:0 0 12px}.legend{display:flex;gap:10px;flex-wrap:wrap}.filter{border:0;border-radius:999px;padding:9px 13px;font-weight:700;cursor:pointer;box-shadow:inset 0 0 0 2px transparent}.filter.off{opacity:.35}.u10{background:var(--u10);color:#062f33}.u12{background:var(--u12);color:white}
+    main{max-width:1100px;margin:18px auto;padding:0 12px 28px}.panel{background:var(--card);border-radius:16px;padding:14px;box-shadow:0 5px 22px rgba(25,52,67,.08)}
+    #updated{font-size:.8rem;color:var(--muted);margin:0 0 10px 4px}.fc .fc-toolbar-title{font-size:1.25rem}.fc .fc-button{background:#173747;border-color:#173747}.fc-event{cursor:pointer}
+    dialog{border:0;border-radius:16px;max-width:520px;width:calc(100% - 28px);padding:0;box-shadow:0 20px 60px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(5,20,28,.5)}.modal{padding:20px}.modal h2{margin-top:0}.close{float:right;border:0;background:#e9eff2;border-radius:999px;width:34px;height:34px;font-size:20px}.meta{color:var(--muted);white-space:pre-wrap}.teamtag{display:inline-block;border-radius:999px;padding:5px 9px;font-weight:700;font-size:.8rem}
+    @media(max-width:700px){header{padding-top:16px}.panel{padding:8px;border-radius:12px}.fc .fc-toolbar{align-items:flex-start;gap:8px;flex-wrap:wrap}.fc .fc-toolbar-chunk{display:flex}.fc .fc-button{padding:.4em .55em}.fc .fc-toolbar-title{font-size:1.1rem}}
+  </style>
+</head>
+<body>
+<header><div class="wrap"><h1>Storm Friends Shared Calendar</h1><div class="legend"><button class="filter u10" data-team="Storm U10 AA">Storm U10 AA</button><button class="filter u12" data-team="Storm U12 A">Storm U12 A</button></div></div></header>
+<main><p id="updated">Loading schedule…</p><div class="panel"><div id="calendar"></div></div></main>
+<dialog id="details"><div class="modal"><button class="close" aria-label="Close">×</button><h2 id="dtitle"></h2><p><span id="dteam" class="teamtag"></span></p><p id="dtime"></p><p id="dlocation"></p><p id="ddesc" class="meta"></p></div></dialog>
+<script>
+(async()=>{
+ const data=await fetch('./data/events.json',{cache:'no-store'}).then(r=>r.json());
+ const active=new Set(['Storm U10 AA','Storm U12 A']); const all=data.events;
+ const updated=document.querySelector('#updated'); updated.textContent=data.updatedAt?'Schedule updated '+new Date(data.updatedAt).toLocaleString():'Schedule will populate after the first GitHub Action run.';
+ const cal=new FullCalendar.Calendar(document.querySelector('#calendar'),{initialView:innerWidth<700?'listMonth':'dayGridMonth',height:'auto',firstDay:1,headerToolbar:{left:'prev,next today',center:'title',right:'dayGridMonth,listMonth'},buttonText:{today:'Today',month:'Month',list:'Schedule'},events:all,eventClick:({event})=>{
+   const p=event.extendedProps; document.querySelector('#dtitle').textContent=event.title; const tag=document.querySelector('#dteam'); tag.textContent=p.team; tag.style.background=p.backgroundColor||event.backgroundColor; tag.style.color=p.textColor||event.textColor;
+   const opts={weekday:'short',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}; document.querySelector('#dtime').textContent=event.start?event.start.toLocaleString([],opts):''; document.querySelector('#dlocation').textContent=p.location?'📍 '+p.location:''; document.querySelector('#ddesc').textContent=p.description||''; document.querySelector('#details').showModal();
+ },eventDidMount:({event,el})=>{if(!active.has(event.extendedProps.team))el.style.display='none'}}); cal.render();
+ document.querySelectorAll('.filter').forEach(b=>b.onclick=()=>{const t=b.dataset.team; active.has(t)?active.delete(t):active.add(t);b.classList.toggle('off',!active.has(t));cal.getEvents().forEach(e=>e.setProp('display',active.has(e.extendedProps.team)?'auto':'none'));});
+ document.querySelector('.close').onclick=()=>document.querySelector('#details').close(); document.querySelector('#details').onclick=e=>{if(e.target.id==='details')e.target.close()};
+})().catch(e=>{document.querySelector('#updated').textContent='Could not load the schedule. '+e.message});
+</script>
+</body></html>
